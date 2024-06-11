@@ -55,13 +55,13 @@ void nn_init(NN *n, Mat *mem, Mat *paramMem, int size, int inSize, int *lSizes) 
     n->w = &mem[0];
     n->b = &mem[sizeof(Mat) * memSize];
     n->out = &mem[sizeof(Mat) * memSize * 2];
-    n->w[0] = MAT_SUB_AT(*paramMem, inSize, lSizes[0], lSizes[0], 0, 0);//mat_init(&n->w[0], inSize, lSizes[0], lSizes[0]);
-    n->b[0] = MAT_SUB_AT(n->w[0], 1, lSizes[0], lSizes[0], inSize, 0);//mat_init(&n->b[0], 1, lSizes[0], lSizes[0]);
-    n->out[0] = MAT_SUB_AT(n->b[0], 1, lSizes[0], lSizes[0], 1, 0);//mat_init(&n->out[0], 1, lSizes[0], lSizes[0]);
+    n->w[0] = MAT_SUB_AT(*paramMem, inSize, lSizes[0], lSizes[0], 0, 0);
+    n->b[0] = MAT_SUB_AT(n->w[0], 1, lSizes[0], lSizes[0], inSize, 0);
+    n->out[0] = MAT_SUB_AT(n->b[0], 1, lSizes[0], lSizes[0], 1, 0);
     for (int i = 1; i < size; i++) {
-        n->w[i] = MAT_SUB_AT(n->out[i - 1], lSizes[i - 1], lSizes[i], lSizes[i], 1, 0);//mat_init(&n->w[i], inSize, lSizes[i], lSizes[i]);
-        n->b[i] = MAT_SUB_AT(n->w[i], 1, lSizes[i], lSizes[i], lSizes[i - 1], 0);//mat_init(&n->b[i], 1, lSizes[i], lSizes[i]);
-        n->out[i] = MAT_SUB_AT(n->b[i], 1, lSizes[i], lSizes[i], 1, 0);//mat_init(&n->out[i], 1, lSizes[i], lSizes[i]);
+        n->w[i] = MAT_SUB_AT(n->out[i - 1], lSizes[i - 1], lSizes[i], lSizes[i], 1, 0);
+        n->b[i] = MAT_SUB_AT(n->w[i], 1, lSizes[i], lSizes[i], lSizes[i - 1], 0);
+        n->out[i] = MAT_SUB_AT(n->b[i], 1, lSizes[i], lSizes[i], 1, 0);
     }
 }
 
