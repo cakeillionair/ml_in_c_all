@@ -83,7 +83,7 @@ JMATRIX_PRECISION nn_get_cost(NN n, Mat in, Mat out, int amount, JMATRIX_PRECISI
         nn_forward(n, MAT_ROW(in, i), f);
         JMATRIX_PRECISION dTotal = 0;
         for (int j = 0; j < out.cols; j++) {
-            JMATRIX_PRECISION y = MAT_AT(NN_GET_OUT(n), 0, j);
+            JMATRIX_PRECISION y = MAT_AT(NN_GET_OUT(n), i, j);
             JMATRIX_PRECISION diff = y - MAT_AT(out, i, j);
             dTotal += diff * diff;
         }
