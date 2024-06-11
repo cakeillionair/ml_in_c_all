@@ -17,18 +17,15 @@ int main(int argc, char **argv) {
         for (int j = 0; j < 2; j++) {
             printf("Inputs: {%d, %d}\n", i, j);
             JMATRIX_PRECISION in[] = {i, j};
-            Mat mIn = TO_1D_MAT(in, 2);
-            NN_FORWARD_SIG(n, mIn);
+            NN_FORWARD_SIG(n, TO_1D_MAT(in, 2));
             Mat out = NN_GET_OUT(n);
             MAT_PRINT(out);
         }
     }
     JMATRIX_PRECISION inp[][2] = {{0, 0}, {0 ,1}, {1, 0}, {1, 1}};
-    Mat m_in = TO_2D_MAT(inp[0], 4, 2);
     JMATRIX_PRECISION outp[] = {0, 1, 1, 1};
-    Mat m_out = TO_2D_MAT(outp, 4, 1);
 
-    printf("Cost: %20.10Lf\n", (long double) NN_GET_COST_SIG(n, m_in, m_out, 4));
+    printf("Cost: %20.10Lf\n", (long double) NN_GET_COST_SIG(n, TO_2D_MAT(inp[0], 4, 2), TO_2D_MAT(outp, 4, 1), 4));
 
     return 0;
 }

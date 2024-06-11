@@ -24,9 +24,10 @@ typedef struct {
     int cols;
 } Mat;
 
-#define TO_1D_MAT(arr, s) {.mat = arr, .rows = 1, .cols = s}
-#define TO_2D_MAT(arr, r, c) {.mat = arr, .rows = r, .cols = c}
+#define TO_1D_MAT(arr, s) ((Mat) {.mat = arr, .rows = 1, .cols = s})
+#define TO_2D_MAT(arr, r, c) ((Mat) {.mat = arr, .rows = r, .cols = c})
 #define MAT_AT(m, i, j) (m).mat[(i) * (m.cols) + (j)]
+#define MAT_ROW(m, i) TO_1D_MAT(&MAT_AT(m, i, 0), (m.cols))
 #define MAT_PRINT(m) mat_print(#m, m)
 #define MAT_SIG(m) mat_apply(m, sigmoidP);
 
@@ -75,6 +76,16 @@ void mat_fill(Mat m, JMATRIX_PRECISION val) {
     for (int i = 0; i < m.rows; i++) {
         for (int j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) = val;
+        }
+    }
+}
+
+void mat_copy(Mat dst, Mat src) {
+    JMATRIX_ASSERT(dst.rows == src.rows);
+    JMATRIX_ASSERT(dst.cols == src.cols);
+    for (int i = 0; i < src.rows; i++) {
+        for (int j = 0; j < src.cols; j++) {
+            MAT_AT(dst, i, j) = MAT_AT(src, i, j);
         }
     }
 }

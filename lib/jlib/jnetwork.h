@@ -76,15 +76,14 @@ void nn_forward(NN n, Mat in, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION)) {
 }
 
 JMATRIX_PRECISION nn_get_cost(NN n, Mat in, Mat out, int amount, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION)) {
+    JMATRIX_ASSERT(in.rows == out.rows);
     JMATRIX_PRECISION result = 0;
 
     for (int i = 0; i < amount; i++) {
-        Mat in_curr = TO_1D_MAT(&MAT_AT(in, i, 0), in.cols);
-        nn_forward(n, in_curr, f);
-        Mat act = NN_GET_OUT(n);
+        nn_forward(n, MAT_ROW(in, i), f);
         JMATRIX_PRECISION dTotal = 0;
         for (int j = 0; j < out.cols; j++) {
-            JMATRIX_PRECISION y = MAT_AT(act, 0, j);
+            JMATRIX_PRECISION y = MAT_AT(NN_GET_OUT(n), 0, j);
             JMATRIX_PRECISION diff = y - MAT_AT(out, i, j);
             dTotal += diff * diff;
         }
