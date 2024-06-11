@@ -22,20 +22,24 @@ typedef struct {
     JMATRIX_PRECISION *mat;
     int rows;
     int cols;
+    int stride;
 } Mat;
 
-#define TO_1D_MAT(arr, s) ((Mat) {.mat = arr, .rows = 1, .cols = s})
-#define TO_2D_MAT(arr, r, c) ((Mat) {.mat = arr, .rows = r, .cols = c})
-#define MAT_AT(m, i, j) (m).mat[(i) * (m.cols) + (j)]
+#define MAT_TO(arr) ((Mat) {.mat = arr, .rows = 0, .cols = 0, .stride = 0})
+#define TO_1D_MAT(arr, s) ((Mat) {.mat = arr, .rows = 1, .cols = s, .stride = 0})
+#define TO_2D_MAT(arr, r, c, s) ((Mat) {.mat = arr, .rows = r, .cols = c, .stride = s})
+#define MAT_AT(m, i, j) (m).mat[(i) * (m).stride + (j)]
 #define MAT_ROW(m, i) TO_1D_MAT(&MAT_AT(m, i, 0), (m.cols))
+#define MAT_SUB(m, r, c, s) TO_2D_MAT((m).mat, r, c, s)
+#define MAT_SUB_AT(m, r, c, s, sr, sc) MAT_SUB(MAT_TO(&(MAT_AT(m, sr, sc))), r, c, s)
 #define MAT_PRINT(m) mat_print(#m, m)
 #define MAT_SIG(m) mat_apply(m, sigmoidP);
 
 JMATRIX_PRECISION rand_JMATRIX_PRECISION();
 JMATRIX_PRECISION sigmoidP(JMATRIX_PRECISION x);
 
-Mat mat_alloc(int rows, int cols);
-void mat_init(Mat *m, int rows, int cols);
+Mat mat_alloc(int rows, int cols, int stride);
+void mat_init(Mat *m, int rows, int cols, int stride);
 void mat_fill(Mat m, JMATRIX_PRECISION val);
 void mat_rand(Mat m, JMATRIX_PRECISION low, JMATRIX_PRECISION high);
 void mat_dot(Mat out, Mat a, Mat b);
@@ -56,18 +60,20 @@ JMATRIX_PRECISION sigmoidP(JMATRIX_PRECISION x) {
     return 1. / (1. + exp(x));
 }
 
-Mat mat_alloc(int rows, int cols) {
+Mat mat_alloc(int rows, int cols, int stride) {
     Mat m;
     m.rows = rows;
     m.cols = cols;
+    m.stride = stride;
     m.mat = JMATRIX_MALLOC(sizeof(JMATRIX_PRECISION) * rows * cols);
     JMATRIX_ASSERT(m.mat != NULL);
     return m;
 }
 
-void mat_init(Mat *m, int rows, int cols) {
+void mat_init(Mat *m, int rows, int cols, int stride) {
     m->rows = rows;
     m->cols = cols;
+    m->stride = stride;
     m->mat = JMATRIX_MALLOC(sizeof(JMATRIX_PRECISION) * rows * cols);
     JMATRIX_ASSERT(m->mat != NULL);
 }

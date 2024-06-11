@@ -14,6 +14,7 @@ typedef struct {
 #define NN_PRINT(n) nn_print(#n, n)
 
 NN nn_alloc(int size, int inSize, int *lSizes);
+void nn_init(NN *n, Mat *mem, Mat *paramMem, int size, int inSize, int *lSizes);
 void nn_fill(NN n, JMATRIX_PRECISION val);
 void nn_rand(NN n, JMATRIX_PRECISION low, JMATRIX_PRECISION high);
 void nn_forward(NN n, Mat in, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION));
@@ -36,15 +37,32 @@ NN nn_alloc(int size, int inSize, int *lSizes) {
     n.w = JMATRIX_MALLOC(sizeof(Mat) * memSize);
     n.b = JMATRIX_MALLOC(sizeof(Mat) * memSize);
     n.out = JMATRIX_MALLOC(sizeof(Mat) * memSize);
-    mat_init(n.w, inSize, lSizes[0]);
-    mat_init(n.b, 1, lSizes[0]);
-    mat_init(n.out, 1, lSizes[0]);
+    mat_init(n.w, inSize, lSizes[0], lSizes[0]);
+    mat_init(n.b, 1, lSizes[0], lSizes[0]);
+    mat_init(n.out, 1, lSizes[0], lSizes[0]);
     for (int i = 1; i < size; i++) {
-        mat_init(&n.w[i], inSize, lSizes[i]);
-        mat_init(&n.b[i], 1, lSizes[i]);
-        mat_init(&n.out[i], 1, lSizes[i]);
+        mat_init(&n.w[i], lSizes[i - 1], lSizes[i], lSizes[i]);
+        mat_init(&n.b[i], 1, lSizes[i], lSizes[i]);
+        mat_init(&n.out[i], 1, lSizes[i], lSizes[i]);
     }
     return n;
+}
+
+void nn_init(NN *n, Mat *mem, Mat *paramMem, int size, int inSize, int *lSizes) {
+    n->size = size;
+    int memSize = 0;
+    for (int i = 0; i < size; i++) memSize += lSizes[i];
+    n->w = &mem[0];
+    n->b = &mem[sizeof(Mat) * memSize];
+    n->out = &mem[sizeof(Mat) * memSize * 2];
+    n->w[0] = MAT_SUB_AT(*paramMem, inSize, lSizes[0], lSizes[0], 0, 0);//mat_init(&n->w[0], inSize, lSizes[0], lSizes[0]);
+    n->b[0] = MAT_SUB_AT(n->w[0], 1, lSizes[0], lSizes[0], inSize, 0);//mat_init(&n->b[0], 1, lSizes[0], lSizes[0]);
+    n->out[0] = MAT_SUB_AT(n->b[0], 1, lSizes[0], lSizes[0], 1, 0);//mat_init(&n->out[0], 1, lSizes[0], lSizes[0]);
+    for (int i = 1; i < size; i++) {
+        n->w[i] = MAT_SUB_AT(n->out[i - 1], lSizes[i - 1], lSizes[i], lSizes[i], 1, 0);//mat_init(&n->w[i], inSize, lSizes[i], lSizes[i]);
+        n->b[i] = MAT_SUB_AT(n->w[i], 1, lSizes[i], lSizes[i], lSizes[i - 1], 0);//mat_init(&n->b[i], 1, lSizes[i], lSizes[i]);
+        n->out[i] = MAT_SUB_AT(n->b[i], 1, lSizes[i], lSizes[i], 1, 0);//mat_init(&n->out[i], 1, lSizes[i], lSizes[i]);
+    }
 }
 
 void nn_fill(NN n, JMATRIX_PRECISION val) {
@@ -76,15 +94,17 @@ void nn_forward(NN n, Mat in, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION)) {
 }
 
 JMATRIX_PRECISION nn_get_cost(NN n, Mat in, Mat out, int amount, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION)) {
+    JMATRIX_ASSERT(in.cols == n.b[0].cols);
     JMATRIX_ASSERT(in.rows == out.rows);
+    JMATRIX_ASSERT(out.cols == NN_GET_OUT(n).cols);
+
     JMATRIX_PRECISION result = 0;
 
     for (int i = 0; i < amount; i++) {
         nn_forward(n, MAT_ROW(in, i), f);
         JMATRIX_PRECISION dTotal = 0;
         for (int j = 0; j < out.cols; j++) {
-            JMATRIX_PRECISION y = MAT_AT(NN_GET_OUT(n), i, j);
-            JMATRIX_PRECISION diff = y - MAT_AT(out, i, j);
+            JMATRIX_PRECISION diff = MAT_AT(NN_GET_OUT(n), i, j) - MAT_AT(out, i, j);
             dTotal += diff * diff;
         }
         //printf("debug result: %Lf, dTotal: %Lf, cols: %d, amount: %d\n", (long double) result, (long double) dTotal, out.cols, amount);
