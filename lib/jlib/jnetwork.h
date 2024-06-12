@@ -15,6 +15,7 @@ typedef struct {
 #define NN_PRINT(n) nn_print(#n, n)
 
 NN nn_alloc(int size, int inSize, int *lSizes);
+Mat *nn_datafile_alloc(FILE *f);
 void nn_init(NN *n, Mat *mem, Mat *paramMem, Mat *outMem, int size, int inSize, int *lSizes);
 void nn_fill(NN n, JMATRIX_PRECISION val);
 void nn_copy(NN dst, NN src, bool out);
@@ -50,6 +51,39 @@ NN nn_alloc(int size, int inSize, int *lSizes) {
         mat_init(&n.out[i], 1, lSizes[i], lSizes[i]);
     }
     return n;
+}
+
+#define MAX_DATA_SIZE 640
+
+Mat *nn_datafile_alloc(FILE *f) {
+    int rows, inCols, outCols;
+    JMATRIX_ASSERT(fscanf(f, "%d;%d;%d;", &rows, &inCols, &outCols) != EOF);
+    int size = rows * (inCols + outCols);
+    JMATRIX_ASSERT(size <= MAX_DATA_SIZE);
+
+    Mat *result = JMATRIX_MALLOC(sizeof(Mat) * 2);
+    JMATRIX_PRECISION *mat = JMATRIX_MALLOC(sizeof(JMATRIX_PRECISION) * size);
+    result[0].mat = mat;
+    result[0].rows = rows;
+    result[0].cols = inCols;
+    result[0].stride = inCols + outCols;
+    result[1].mat = &mat[inCols];
+    result[1].rows = rows;
+    result[1].cols = outCols;
+    result[1].stride = inCols + outCols;
+
+    for (int i = 0; i < size; i++) {
+        long double buffer;
+        if (fscanf(f, "%Lf,", &buffer) == EOF) {
+            free(result);
+            free(mat);
+            fclose(f);
+            return NULL;
+        }
+        mat[i] = buffer;
+    }
+
+    return result;
 }
 
 void nn_init(NN *n, Mat *mem, Mat *paramMem, Mat *outMem, int size, int inSize, int *lSizes) {
