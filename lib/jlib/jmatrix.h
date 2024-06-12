@@ -26,7 +26,7 @@ typedef struct {
 } Mat;
 
 #define MAT_TO(arr) ((Mat) {.mat = arr, .rows = 0, .cols = 0, .stride = 0})
-#define TO_1D_MAT(arr, s) ((Mat) {.mat = arr, .rows = 1, .cols = s, .stride = 0})
+#define TO_1D_MAT(arr, s) ((Mat) {.mat = arr, .rows = 1, .cols = s, .stride = s})
 #define TO_2D_MAT(arr, r, c, s) ((Mat) {.mat = arr, .rows = r, .cols = c, .stride = s})
 #define MAT_AT(m, i, j) (m).mat[(i) * (m).stride + (j)]
 #define MAT_ROW(m, i) TO_1D_MAT(&MAT_AT(m, i, 0), (m.cols))
@@ -41,6 +41,7 @@ JMATRIX_PRECISION sigmoidP(JMATRIX_PRECISION x);
 Mat mat_alloc(int rows, int cols, int stride);
 void mat_init(Mat *m, int rows, int cols, int stride);
 void mat_fill(Mat m, JMATRIX_PRECISION val);
+void mat_copy(Mat dst, Mat src);
 void mat_rand(Mat m, JMATRIX_PRECISION low, JMATRIX_PRECISION high);
 void mat_dot(Mat out, Mat a, Mat b);
 void mat_sum(Mat out, Mat a);
