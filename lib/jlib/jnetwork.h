@@ -117,32 +117,34 @@ JMATRIX_PRECISION nn_get_cost(NN n, Mat in, Mat out, JMATRIX_PRECISION (*f)(JMAT
         nn_forward(n, MAT_ROW(in, i), f);
         JMATRIX_PRECISION dTotal = 0;
         for (int j = 0; j < out.cols; j++) {
-            JMATRIX_PRECISION diff = MAT_AT(NN_GET_OUT(n), i, j) - MAT_AT(out, i, j);
-            dTotal += diff * diff;
-        }
+            JMATRIX_PRECISION diff = MAT_AT(NN_GET_OUT(n), /*F*CK THIS NUMBER -->*/0, j) - MAT_AT(out, i, j);
+            dTotal += diff * diff;/*                         It broke my code and it took me HOURS*/
+        }/*                                                  to find the error!!!                 */
         result += dTotal / out.cols;
     }
 
     return result / in.rows;
 }
 
+#define NN_COST (nn_get_cost(n, in, out, f))
+
 void nn_finite_diff(NN g, NN n, Mat in, Mat out, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION), JMATRIX_PRECISION eps) {
     JMATRIX_ASSERT(g.size == n.size);
     JMATRIX_PRECISION buffer;
 
-    JMATRIX_PRECISION cost = nn_get_cost(n, in, out, f);
+    JMATRIX_PRECISION cost = NN_COST;
 
     for (int i = 0; i < n.size; i++) {
         for (int j = 0; j < n.w[i].cols; j++) {
             for (int k = 0; k < n.w[i].rows; k++) {
                 buffer = MAT_AT(n.w[i], k, j);
                 MAT_AT(n.w[i], k, j) += eps;
-                MAT_AT(g.w[i], k, j) = (nn_get_cost(n, in, out, f) - cost) / eps;
+                MAT_AT(g.w[i], k, j) = (NN_COST - cost) / eps;
                 MAT_AT(n.w[i], k, j) = buffer;
             }
             buffer = MAT_AT(n.b[i], 0, j);
             MAT_AT(n.b[i], 0, j) += eps;
-            MAT_AT(g.b[i], 0, j) = (nn_get_cost(n, in, out, f) - cost) / eps;
+            MAT_AT(g.b[i], 0, j) = (NN_COST - cost) / eps;
             MAT_AT(n.b[i], 0, j) = buffer;
         }
     }
@@ -150,6 +152,7 @@ void nn_finite_diff(NN g, NN n, Mat in, Mat out, JMATRIX_PRECISION (*f)(JMATRIX_
 
 void nn_learn(NN out, NN g, JMATRIX_PRECISION rate) {
     JMATRIX_ASSERT(g.size == out.size);
+    JMATRIX_ASSERT(rate != 0);
 
     for (int i = 0; i < out.size; i++) {
         for (int j = 0; j < out.w[i].cols; j++) {
