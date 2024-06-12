@@ -1,6 +1,5 @@
 #define JMATRIX_IMPLEMENTATION
 #define JNETWORK_IMPLEMENTATION
-//#define JMATRIX_PRECISION long double
 #include <jmatrix.h>
 #include <jnetwork.h>
 #include <time.h>
@@ -9,6 +8,7 @@
 #define ARG_COUNT 5
 
 int main(int argc, char **argv) {
+    // Collecting command-line arguments START
     if (argc != ARG_COUNT + 1) {
         printf("Usage: %s <data> <debug> <rate> <eps> <iter>\n", argv[0]);
         return 1;
@@ -55,9 +55,12 @@ int main(int argc, char **argv) {
         fclose(data);
         return 6;
     }
+    // Collecting command-line arguments END
 
+    // Get Seed for rand()
     srand(time(NULL));
 
+    // UNFINISHED: Create nn
     int layout[] = {2, 1};
     NN n;
     JMATRIX_PRECISION mem[NEURONS * 3];
@@ -65,29 +68,19 @@ int main(int argc, char **argv) {
     JMATRIX_PRECISION outMem[NEURONS];
     Mat outMem_mat = {.mat = outMem, .rows = 1, .cols = 3, .stride = 3};
     nn_init(&n, JMATRIX_MALLOC(sizeof(Mat) * NEURONS * 2), &mem_mat, &outMem_mat, 2, 2, layout);
-    nn_fill(n, 1);
-
-    JMATRIX_PRECISION test[] = {
-        0, 0, 0,
-        0, 1, 1,
-        1, 0, 1,
-        1, 1, 1
-    };
-
-    printf("Cost: %20.10Lf\n", (long double) NN_GET_COST_SIG(n, in, out));
     NN g = nn_alloc(2, 2, layout);
-    #if 1
-    for (int i = 0; i < iterations; i++) {
+
+    nn_rand(n, 0, 1);
+
+    // Iterate and improve nn
+    printf("[%8d]cost: %20.10Lf\n", 0, (long double) NN_GET_COST_SIG(n, in, out));
+    for (int i = 1; i <= iterations; i++) {
         nn_finite_diff(g, n, in, out, sigmoidP, eps);
         nn_learn(n, g, rate);
-        if (debug != 0 && i % debug == 0) printf("Cost: %20.10Lf\n", (long double) NN_GET_COST_SIG(n, in, out));
+        if (debug != 0 && i % debug == 0) printf("[%8d]cost: %20.10Lf\n", i, (long double) NN_GET_COST_SIG(n, in, out));
     }
-    #endif
-
-    nn_finite_diff(g, n, in, out, sigmoidP, eps);
-    nn_learn(n, g, rate);
-    printf("Cost: %20.10Lf\n", (long double) NN_GET_COST_SIG(n, in, out));
     
+    // Print results
     for (int i = 0; i < in.rows; i++) {
         Mat inputs = MAT_ROW(in, i);
         MAT_PRINT(inputs);
@@ -95,8 +88,6 @@ int main(int argc, char **argv) {
         Mat result = NN_GET_OUT(n);
         MAT_PRINT(result);
     }
-
-    //MAT_PRINT(outMem_mat);
 
     fclose(data);
     return 0;

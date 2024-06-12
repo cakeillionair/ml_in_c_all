@@ -53,14 +53,29 @@ void mat_print(const char *name, Mat a);
 #ifdef JMATRIX_IMPLEMENTATION
 #undef JMATRIX_IMPLEMENTATION
 
+/**
+ * @return Random number between 0 and 1
+ */
 JMATRIX_PRECISION rand_JMATRIX_PRECISION() {
     return (JMATRIX_PRECISION) rand() / (JMATRIX_PRECISION) RAND_MAX;
 }
 
+/**
+ * @brief Passes a number through the sigmoid function
+ * @param x is the input number
+ * @return Number passed through the function
+ */
 JMATRIX_PRECISION sigmoidP(JMATRIX_PRECISION x) {
     return 1. / (1. + exp(x));
 }
 
+/**
+ * @brief Allocates the array of a matrix with a specified size
+ * @param rows is the amount of rows
+ * @param cols is the amount of columns
+ * @param stride is the stride
+ * @return Matrix of specified size
+ */
 Mat mat_alloc(int rows, int cols, int stride) {
     Mat m;
     m.rows = rows;
@@ -71,6 +86,13 @@ Mat mat_alloc(int rows, int cols, int stride) {
     return m;
 }
 
+/**
+ * @brief Initializes a pre-allocated matrix
+ * @param m is the pointer to the matrix
+ * @param rows is the amount of rows
+ * @param cols is the amount of columns
+ * @param stride is the stride
+ */
 void mat_init(Mat *m, int rows, int cols, int stride) {
     m->rows = rows;
     m->cols = cols;
@@ -79,6 +101,11 @@ void mat_init(Mat *m, int rows, int cols, int stride) {
     JMATRIX_ASSERT(m->mat != NULL);
 }
 
+/**
+ * @brief Fills a matrix with a number
+ * @param m is the matrix
+ * @param val is the number
+ */
 void mat_fill(Mat m, JMATRIX_PRECISION val) {
     for (int i = 0; i < m.rows; i++) {
         for (int j = 0; j < m.cols; j++) {
@@ -87,6 +114,11 @@ void mat_fill(Mat m, JMATRIX_PRECISION val) {
     }
 }
 
+/**
+ * @brief Copies all values from a matrix into another matrix
+ * @param dst is the destination matrix
+ * @param src is the source matrix
+ */
 void mat_copy(Mat dst, Mat src) {
     JMATRIX_ASSERT(dst.rows == src.rows);
     JMATRIX_ASSERT(dst.cols == src.cols);
@@ -97,6 +129,11 @@ void mat_copy(Mat dst, Mat src) {
     }
 }
 
+/**
+ * @brief Fills a matrix with a random number from low to high
+ * @param low is the minimum number
+ * @param high is the maximum number
+ */
 void mat_rand(Mat m, JMATRIX_PRECISION low, JMATRIX_PRECISION high) {
     for (int i = 0; i < m.rows; i++) {
         for (int j = 0; j < m.cols; j++) {
@@ -105,6 +142,12 @@ void mat_rand(Mat m, JMATRIX_PRECISION low, JMATRIX_PRECISION high) {
     }
 }
 
+/**
+ * @brief Applies the dot product to two matricies and stores the result in a third matrix
+ * @param out is the destination matrix
+ * @param a is the first matrix
+ * @param b is the second matrix
+ */
 void mat_dot(Mat out, Mat a, Mat b) {
     JMATRIX_ASSERT(a.cols == b.rows);
     JMATRIX_ASSERT(out.rows == a.rows);
@@ -121,6 +164,11 @@ void mat_dot(Mat out, Mat a, Mat b) {
     }
 }
 
+/**
+ * @brief Adds two matricies and stores the result in the first matrix
+ * @param out is the destination matrix
+ * @param m is the matrix that gets added
+ */
 void mat_sum(Mat out, Mat m) {
     JMATRIX_ASSERT(out.rows == m.rows);
     JMATRIX_ASSERT(out.cols == m.cols);
@@ -131,6 +179,12 @@ void mat_sum(Mat out, Mat m) {
     }
 }
 
+/**
+ * @brief Applies a function to every element in a matrix
+ * @param m is the matrix
+ * @param f is the function pointer
+ * @warning f needs to take a number as input and nothing else
+ */
 void mat_apply(Mat m, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION)) {
     for (int i = 0; i < m.rows; i++) {
         for (int j = 0; j < m.cols; j++) {
@@ -139,6 +193,11 @@ void mat_apply(Mat m, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION)) {
     }
 }
 
+/**
+ * @brief Prints the contents of a matrix after printing its name
+ * @param name is the string storing the name
+ * @param m is the matrix
+ */
 void mat_print(const char *name, Mat m) {
     if (name != NULL) printf("Matrix: %s\n", name);
     for (int i = 0; i < m.rows; i++) {
