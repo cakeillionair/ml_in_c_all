@@ -5,7 +5,7 @@
 #include <jnetwork.h>
 #include <time.h>
 
-#define NEURONS 3
+#define NEURONS 22
 #define SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 #define ARG_COUNT 5
 
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
     srand(time(NULL));
 
     // UNFINISHED: Create nn
-    int layout[] = {2, 1};
+    int layout[] = {1, 5, 1};
     NN n;
     JMATRIX_PRECISION mem[NEURONS * 3];
     Mat mem_mat = {.mat = mem, .rows = 1, .cols = 9, .stride = 9};
