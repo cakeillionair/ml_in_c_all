@@ -1,10 +1,12 @@
 #define JMATRIX_IMPLEMENTATION
 #define JNETWORK_IMPLEMENTATION
+#define JMATRIX_PRECISION long double
 #include <jmatrix.h>
 #include <jnetwork.h>
 #include <time.h>
 
 #define NEURONS 3
+#define SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 #define ARG_COUNT 5
 
 int main(int argc, char **argv) {
@@ -67,8 +69,8 @@ int main(int argc, char **argv) {
     Mat mem_mat = {.mat = mem, .rows = 1, .cols = 9, .stride = 9};
     JMATRIX_PRECISION outMem[NEURONS];
     Mat outMem_mat = {.mat = outMem, .rows = 1, .cols = 3, .stride = 3};
-    nn_init(&n, JMATRIX_MALLOC(sizeof(Mat) * NEURONS * 2), &mem_mat, &outMem_mat, 2, 2, layout);
-    NN g = nn_alloc(2, 2, layout);
+    nn_init(&n, JMATRIX_MALLOC(sizeof(Mat) * NEURONS * 2), &mem_mat, &outMem_mat, SIZE(layout), in.cols, layout);
+    NN g = nn_alloc(SIZE(layout), in.cols, layout);
 
     nn_rand(n, 0, 1);
 
@@ -87,6 +89,8 @@ int main(int argc, char **argv) {
         NN_FORWARD_SIG(n, inputs);
         Mat result = NN_GET_OUT(n);
         MAT_PRINT(result);
+        Mat expected = MAT_ROW(out, i);
+        MAT_PRINT(expected);
     }
 
     fclose(data);
