@@ -219,7 +219,7 @@ JMATRIX_PRECISION nn_get_cost(NN n, Mat in, Mat out, JMATRIX_PRECISION (*f)(JMAT
 
 /**
  * @brief Calculates a gradient by which a neural network needs to be changed
- * @param g is the output nn
+ * @param g is the gradient nn
  * @param n is the input nn
  * @param in is the input matrix
  * @param out is the matrix with correct output values
