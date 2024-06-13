@@ -12,7 +12,7 @@ typedef struct {
 #define NN_FORWARD_SIG(n, in) nn_forward(n, in, sigmoidP)
 #define NN_GET_COST_SIG(n, in, out) nn_get_cost(n, in, out, sigmoidP)
 #define NN_GET_OUT(n) (n.out[n.size - 1])
-#define NN_PRINT(n) nn_print(#n, n)
+#define NN_PRINT(n) nn_print(#n, n, 4)
 
 NN nn_alloc(int size, int inSize, int *lSizes);
 Mat *nn_datafile_alloc(FILE *f);
@@ -24,7 +24,7 @@ void nn_forward(NN n, Mat in, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION));
 JMATRIX_PRECISION nn_get_cost(NN n, Mat in, Mat out, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION));
 void nn_finite_diff(NN g, NN n, Mat in, Mat out, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION), JMATRIX_PRECISION eps);
 void nn_learn(NN out, NN g, JMATRIX_PRECISION rate);
-void nn_print(const char *name, NN n);
+void nn_print(const char *name, NN n, int indent);
 
 #endif // Header
 
@@ -49,6 +49,7 @@ NN nn_alloc(int size, int inSize, int *lSizes) {
     n.w = JMATRIX_MALLOC(sizeof(Mat) * memSize);
     n.b = JMATRIX_MALLOC(sizeof(Mat) * memSize);
     n.out = JMATRIX_MALLOC(sizeof(Mat) * memSize);
+    JMATRIX_ASSERT(n.w != NULL && n.b != NULL && n.out != NULL);
     mat_init(n.w, inSize, lSizes[0], lSizes[0]);
     mat_init(n.b, 1, lSizes[0], lSizes[0]);
     mat_init(n.out, 1, lSizes[0], lSizes[0]);
@@ -77,6 +78,7 @@ Mat *nn_datafile_alloc(FILE *f) {
 
     Mat *result = JMATRIX_MALLOC(sizeof(Mat) * 2);
     JMATRIX_PRECISION *mat = JMATRIX_MALLOC(sizeof(JMATRIX_PRECISION) * size);
+    JMATRIX_ASSERT(result != NULL && mat != NULL);
     result[0].mat = mat;
     result[0].rows = rows;
     result[0].cols = inCols;
@@ -196,7 +198,7 @@ void nn_forward(NN n, Mat in, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION)) {
  * @deprecated This function is not good and a better one is on the way
  */
 JMATRIX_PRECISION nn_get_cost(NN n, Mat in, Mat out, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION)) {
-    JMATRIX_ASSERT(in.cols == n.b[0].cols);
+    JMATRIX_ASSERT(in.cols == n.w[0].rows);
     JMATRIX_ASSERT(in.rows == out.rows);
     JMATRIX_ASSERT(out.cols == NN_GET_OUT(n).cols);
 
@@ -273,14 +275,19 @@ void nn_learn(NN out, NN g, JMATRIX_PRECISION rate) {
  * @brief Prints the matricies of a neural network with its name
  * @param name is the name
  * @param n is the nn
+ * @param indent is the amount of indentation
  */
-void nn_print(const char *name, NN n) {
+void nn_print(const char *name, NN n, int indent) {
+    JMATRIX_ASSERT(indent <= JMATRIX_INDENT_LIMIT);
     printf("Network: %s\n", name);
     for (int i = 0; i < n.size; i++) {
-        printf("Layer %i:\n", i);
-        mat_print("Weights", n.w[i]);
-        mat_print("Biases", n.b[i]);
-        mat_print("Outputs", n.out[i]);
+        printf("%*sLayer %i:\n", indent, "", i);
+        printf("%*s", 2 * indent, "");
+        mat_print("Weights", n.w[i], 3 * indent);
+        printf("%*s", 2 * indent, "");
+        mat_print("Biases", n.b[i], 3 * indent);
+        printf("%*s", 2 * indent, "");
+        mat_print("Outputs", n.out[i], 3 * indent);
     }
 }
 

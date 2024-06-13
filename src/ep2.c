@@ -1,6 +1,7 @@
 #define JMATRIX_IMPLEMENTATION
 #define JNETWORK_IMPLEMENTATION
 #define JMATRIX_PRECISION long double
+#define JMATRIX_INDENT_LIMIT 64
 #include <jmatrix.h>
 #include <jnetwork.h>
 #include <time.h>
@@ -25,6 +26,7 @@ int main(int argc, char **argv) {
     Mat *test_data = nn_datafile_alloc(data);
     if (test_data == NULL) {
         printf("Error: loading from file: %s\n", argv[1]);
+        fclose(data);
         return 7;
     }
     Mat in = test_data[0];
@@ -63,7 +65,7 @@ int main(int argc, char **argv) {
     srand(time(NULL));
 
     // UNFINISHED: Create nn
-    int layout[] = {1, 5, 1};
+    int layout[] = {3, 5, 1};
     NN n;
     JMATRIX_PRECISION mem[NEURONS * 3];
     Mat mem_mat = {.mat = mem, .rows = 1, .cols = 9, .stride = 9};
@@ -83,15 +85,20 @@ int main(int argc, char **argv) {
     }
     
     // Print results
-    for (int i = 0; i < in.rows; i++) {
-        Mat inputs = MAT_ROW(in, i);
-        MAT_PRINT(inputs);
-        NN_FORWARD_SIG(n, inputs);
-        Mat result = NN_GET_OUT(n);
-        MAT_PRINT(result);
-        Mat expected = MAT_ROW(out, i);
-        MAT_PRINT(expected);
+    if (debug) {
+        for (int i = 0; i < in.rows; i++) {
+            Mat inputs = MAT_ROW(in, i);
+            MAT_PRINT(inputs);
+            NN_FORWARD_SIG(n, inputs);
+            Mat result = NN_GET_OUT(n);
+            MAT_PRINT(result);
+            Mat expected = MAT_ROW(out, i);
+            MAT_PRINT(expected);
+        }
     }
+
+    // DEBUG
+    nn_print("n", n, 4);
 
     fclose(data);
     return 0;

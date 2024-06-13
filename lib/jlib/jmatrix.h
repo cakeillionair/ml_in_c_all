@@ -18,6 +18,10 @@
 #define JMATRIX_PRECISION float
 #endif
 
+#ifndef JMATRIX_INDENT_LIMIT
+#define JMATRIX_INDENT_LIMIT 16
+#endif
+
 typedef struct {
     JMATRIX_PRECISION *mat;
     int rows;
@@ -32,7 +36,7 @@ typedef struct {
 #define MAT_ROW(m, i) TO_1D_MAT(&MAT_AT(m, i, 0), (m.cols))
 #define MAT_SUB(m, r, c, s) TO_2D_MAT((m).mat, r, c, s)
 #define MAT_SUB_AT(m, r, c, s, sr, sc) MAT_SUB(MAT_TO(&(MAT_AT(m, sr, sc))), r, c, s)
-#define MAT_PRINT(m) mat_print(#m, m)
+#define MAT_PRINT(m) mat_print(#m, m, 0)
 #define MAT_SIG(m) mat_apply(m, sigmoidP);
 
 JMATRIX_PRECISION rand_JMATRIX_PRECISION();
@@ -46,7 +50,7 @@ void mat_rand(Mat m, JMATRIX_PRECISION low, JMATRIX_PRECISION high);
 void mat_dot(Mat out, Mat a, Mat b);
 void mat_sum(Mat out, Mat a);
 void mat_apply(Mat m, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION));
-void mat_print(const char *name, Mat a);
+void mat_print(const char *name, Mat a, int indent);
 
 #endif // Header
 
@@ -197,11 +201,13 @@ void mat_apply(Mat m, JMATRIX_PRECISION (*f)(JMATRIX_PRECISION)) {
  * @brief Prints the contents of a matrix after printing its name
  * @param name is the string storing the name
  * @param m is the matrix
+ * @param indent is the indentation
  */
-void mat_print(const char *name, Mat m) {
+void mat_print(const char *name, Mat m, int indent) {
+    JMATRIX_ASSERT(indent <= JMATRIX_INDENT_LIMIT);
     if (name != NULL) printf("Matrix: %s\n", name);
     for (int i = 0; i < m.rows; i++) {
-        printf("{ ");
+        printf("%*s{ ", indent, "");
         for (int j = 0; j < m.cols; j++) {
             printf("%Lf ", (long double) MAT_AT(m, i, j));
         }
