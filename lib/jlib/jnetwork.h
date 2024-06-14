@@ -9,10 +9,11 @@ typedef struct {
     int size;
 } NN;
 
-#define NN_FORWARD_SIG(n, in) nn_forward(n, in, sigmoidP)
-#define NN_GET_COST_SIG(n, in, out) nn_get_cost(n, in, out, sigmoidP)
+#define NN_FORWARD_SIG(n, in) nn_forward((n), (in), sigmoidP)
+#define NN_GET_COST_SIG(n, in, out) nn_get_cost((n), (in), (out), sigmoidP)
+#define NN_PRINT_COST_SIG(n, in, out, i) printf("[%8d]cost: %20.10Lf\n", (i), (long double) NN_GET_COST_SIG((n), (in), (out)))
 #define NN_GET_OUT(n) (n.out[n.size - 1])
-#define NN_PRINT(n) nn_print(#n, n, 4)
+#define NN_PRINT(n) nn_print(#n, (n), 4)
 
 NN nn_alloc(int size, int inSize, int *lSizes);
 Mat *nn_datafile_alloc(FILE *f);

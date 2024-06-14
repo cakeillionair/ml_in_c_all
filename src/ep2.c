@@ -77,11 +77,11 @@ int main(int argc, char **argv) {
     nn_rand(n, 0, 1);
 
     // Iterate and improve nn
-    printf("[%8d]cost: %20.10Lf\n", 0, (long double) NN_GET_COST_SIG(n, in, out));
+    NN_PRINT_COST_SIG(n, in, out, 0);
     for (int i = 1; i <= iterations; i++) {
         nn_finite_diff(g, n, in, out, sigmoidP, eps);
         nn_learn(n, g, rate);
-        if (debug != 0 && i % debug == 0) printf("[%8d]cost: %20.10Lf\n", i, (long double) NN_GET_COST_SIG(n, in, out));
+        if (debug != 0 && i % debug == 0) NN_PRINT_COST_SIG(n, in, out, i);
     }
     
     // Print results
